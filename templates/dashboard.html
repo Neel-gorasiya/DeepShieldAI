@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepShield AI — Verification Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0b0f17;
+  --surface: #121824;
+  --surface-hover: #182232;
+  --surface-alt: #0e141f;
+  --border: #1f2a3c;
+  --border-focus: #3b82f6;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --faint: #64748b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --ai-col: #ef4444;
+  --ai-bg: rgba(239, 68, 68, 0.12);
+  --ai-bdr: rgba(239, 68, 68, 0.25);
+  --hu-col: #10b981;
+  --hu-bg: rgba(16, 185, 129, 0.12);
+  --hu-bdr: rgba(16, 185, 129, 0.25);
+  --warn-col: #f59e0b;
+  --warn-bg: rgba(245, 158, 11, 0.12);
+  --warn-bdr: rgba(245, 158, 11, 0.25);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 50% 0%, #151e2e 0%, transparent 60%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.25rem 4rem;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAVBAR */
+.navbar {
+  width: 100%;
+  max-width: 1060px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: relative;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+}
+
+.brand-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.brand-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-link {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 13px;
+  border-radius: var(--radius-xs);
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+  color: #ffffff;
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 1060px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* HEADER */
+.dash-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.dash-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  background: #172554;
+  border: 1px solid #1e3a8a;
+  border-radius: var(--radius-xs);
+  padding: 3px 9px;
+  width: fit-content;
+}
+
+.eyebrow svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+h1 {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+}
+
+.dash-sub {
+  font-size: 0.88rem;
+  color: var(--muted);
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: #cbd5e1;
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-hover);
+  color: #ffffff;
+  border-color: #334155;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  padding: 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.stat-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a2538;
+}
+
+.stat-icon svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
+  fill: none;
+}
+
+.stat-icon.total { color: #60a5fa; }
+.stat-icon.human { color: #34d399; }
+.stat-icon.ai { color: #f87171; }
+.stat-icon.alert { color: #fbbf24; }
+
+.stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.stat-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.85rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #f8fafc;
+}
+
+.stat-pct-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.stat-pct-badge.neutral { background: #1e293b; color: #94a3b8; }
+.stat-pct-badge.human { background: var(--hu-bg); color: #6ee7b7; border: 1px solid var(--hu-bdr); }
+.stat-pct-badge.ai { background: var(--ai-bg); color: #fca5a5; border: 1px solid var(--ai-bdr); }
+.stat-pct-badge.alert { background: var(--warn-bg); color: #fde68a; border: 1px solid var(--warn-bdr); }
+
+.stat-foot {
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+
+/* CHARTS ROW */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.chart-card {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.card-title svg {
+  width: 16px;
+  height: 16px;
+  stroke: #60a5fa;
+  fill: none;
+  stroke-width: 2;
+}
+
+.donut-box {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.donut-canvas-wrap {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.donut-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.legend-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-dot.human { background: #10b981; }
+.legend-dot.ai { background: #ef4444; }
+.legend-dot.alert { background: #f59e0b; }
+
+.legend-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* MODALITY GRID */
+.modality-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.65rem;
+}
+
+.modality-box {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
+}
+
+.modality-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #1a2538;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #60a5fa;
+}
+
+.modality-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.modality-name {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modality-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* RECENT ACTIVITY */
+.activity-card {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.84rem;
+}
+
+th {
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 0.8rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cell-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 220px;
+}
+
+.file-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #182232;
+  border: 1px solid var(--border);
+  color: #cbd5e1;
+}
+
+.badge-type svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.badge-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.badge-verdict.ai {
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-bdr);
+  color: #fca5a5;
+}
+
+.badge-verdict.human {
+  background: var(--hu-bg);
+  border: 1px solid var(--hu-bdr);
+  color: #6ee7b7;
+}
+
+.badge-verdict.alert {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-bdr);
+  color: #fde68a;
+}
+
+.confidence-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 85px;
+}
+
+.mini-bar {
+  flex: 1;
+  height: 4px;
+  background: #1e293b;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mini-fill {
+  height: 100%;
+}
+
+.mini-fill.ai { background: var(--ai-col); }
+.mini-fill.human { background: var(--hu-col); }
+.mini-fill.alert { background: var(--warn-col); }
+
+.conf-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  width: 38px;
+  text-align: right;
+}
+
+.date-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.action-link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #60a5fa;
+  text-decoration: none;
+  padding: 4px 9px;
+  border-radius: var(--radius-xs);
+  border: 1px solid #1e3a8a;
+  background: #172554;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s;
+}
+
+.action-link:hover {
+  background: #1e40af;
+  color: #ffffff;
+}
+
+.action-link svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.empty-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: #162030;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--faint);
+}
+
+.empty-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.empty-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+@media (max-width: 860px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .modality-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  body { padding: 1rem 0.75rem 3rem; }
+  .navbar { flex-direction: column; gap: 0.75rem; }
+  .nav-links { width: 100%; justify-content: center; }
+  .dash-header { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; }
+  .header-actions .btn { flex: 1; justify-content: center; }
+  .stats-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+    <span class="brand-name">DeepShield AI</span>
+  </a>
+
+  <div class="nav-links">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/dashboard" class="nav-link active">Dashboard</a>
+    <a href="/#uploadCard" class="nav-link">Verify Media</a>
+    <a href="/history" class="nav-link">History</a>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <header class="dash-header">
+    <div class="dash-title-group">
+      <div class="eyebrow">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>Forensic Analytics</span>
+      </div>
+      <h1>Verification Dashboard</h1>
+      <p class="dash-sub">Summary metrics of processed media, verdict distribution, and modality telemetry from the local verification database.</p>
+    </div>
+
+    <div class="header-actions">
+      <a href="/history" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Verification History</span>
+      </a>
+      <a href="/" class="btn btn-primary">
+        <svg viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>New Verification</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- STATS CARDS -->
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <div class="stat-top">
+        <span class="stat-label">Total Media Analyses</span>
+        <div class="stat-icon total">
+          <svg viewBox="0 0 24 24">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="stat-value-row">
+        <span class="stat-number">{{ data.total }}</span>
+        <span class="stat-pct-badge neutral">All Time</span>
+      </div>
+      <div class="stat-foot">Processed through forensic pipelines</div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="stat-top">
+        <span class="stat-label">Authentic Media</span>
+        <div class="stat-icon human">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+      </div>
+      <div class="stat-value-row">
+        <span class="stat-number">{{ data.human_count }}</span>
+        <span class="stat-pct-badge human">
+          {{ ((data.human_count / data.total * 100) | round(1)) if data.total > 0 else 0 }}%
+        </span>
+      </div>
+      <div class="stat-foot">Verified organic human creation</div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="stat-top">
+        <span class="stat-label">AI Synthetic Media</span>
+        <div class="stat-icon ai">
+          <svg viewBox="0 0 24 24">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+      </div>
+      <div class="stat-value-row">
+        <span class="stat-number">{{ data.ai_count }}</span>
+        <span class="stat-pct-badge ai">
+          {{ ((data.ai_count / data.total * 100) | round(1)) if data.total > 0 else 0 }}%
+        </span>
+      </div>
+      <div class="stat-foot">Flagged synthetic artifacts / deepfakes</div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="stat-top">
+        <span class="stat-label">Uncertain / Alerts</span>
+        <div class="stat-icon alert">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+      </div>
+      <div class="stat-value-row">
+        <span class="stat-number">{{ data.alert_count }}</span>
+        <span class="stat-pct-badge alert">
+          {{ ((data.alert_count / data.total * 100) | round(1)) if data.total > 0 else 0 }}%
+        </span>
+      </div>
+      <div class="stat-foot">Inconclusive or unsupported formats</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="charts-grid">
+    <!-- RESULT DISTRIBUTION -->
+    <div class="card chart-card">
+      <div class="card-title-bar">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a10 10 0 0 1 10 10h-10z"></path>
+          </svg>
+          <span>Detection Verdict Distribution</span>
+        </div>
+      </div>
+
+      {% if data.total > 0 %}
+      <div class="donut-box">
+        <div class="donut-canvas-wrap">
+          <canvas id="verdictDonut"></canvas>
+        </div>
+        <div class="donut-legend">
+          <div class="legend-row">
+            <div class="legend-row-left">
+              <span class="legend-dot human"></span>
+              <span>Authentic</span>
+            </div>
+            <span class="legend-val">{{ data.human_count }}</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-row-left">
+              <span class="legend-dot ai"></span>
+              <span>AI Synthetic</span>
+            </div>
+            <span class="legend-val">{{ data.ai_count }}</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-row-left">
+              <span class="legend-dot alert"></span>
+              <span>Uncertain</span>
+            </div>
+            <span class="legend-val">{{ data.alert_count }}</span>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding: 1.75rem 1rem;">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="empty-title">No Analyses Recorded</div>
+        <div class="empty-sub">Run your first verification to populate result distribution metrics.</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- MODALITY BREAKDOWN -->
+    <div class="card chart-card">
+      <div class="card-title-bar">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <span>Analyses by Media Type</span>
+        </div>
+      </div>
+
+      <div class="modality-grid">
+        <div class="modality-box">
+          <div class="modality-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <span class="modality-name">Image</span>
+          <span class="modality-count">{{ data.media_types.get('image', 0) }}</span>
+        </div>
+        <div class="modality-box">
+          <div class="modality-icon">
+            <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          </div>
+          <span class="modality-name">Video</span>
+          <span class="modality-count">{{ data.media_types.get('video', 0) }}</span>
+        </div>
+        <div class="modality-box">
+          <div class="modality-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </div>
+          <span class="modality-name">Audio</span>
+          <span class="modality-count">{{ data.media_types.get('audio', 0) }}</span>
+        </div>
+        <div class="modality-box">
+          <div class="modality-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <span class="modality-name">Text</span>
+          <span class="modality-count">{{ data.media_types.get('text', 0) }}</span>
+        </div>
+      </div>
+
+      {% if data.total > 0 %}
+      <div style="height: 100px; width: 100%; margin-top: 0.25rem;">
+        <canvas id="modalityBar"></canvas>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RECENT ACTIVITY -->
+  <div class="card activity-card">
+    <div class="card-title-bar">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span>Recent Analyses</span>
+      </div>
+      {% if data.recent_activity %}
+      <a href="/history" class="action-link">
+        <span>View Full History</span>
+        <svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+      {% endif %}
+    </div>
+
+    {% if data.recent_activity %}
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Artifact Filename</th>
+            <th>Media Type</th>
+            <th>Detection Result</th>
+            <th>Confidence</th>
+            <th>Analysis Date</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in data.recent_activity %}
+          <tr>
+            <td>
+              <div class="cell-file">
+                <span class="file-mono" title="{{ r.filename }}">{{ r.filename }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="badge-type">
+                {% if r.media_type == 'image' %}
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  Image
+                {% elif r.media_type == 'video' %}
+                  <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                  Video
+                {% elif r.media_type == 'audio' %}
+                  <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                  Audio
+                {% else %}
+                  <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Text
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              <span class="badge-verdict {{ r.verdict_category }}">
+                <span>●</span>
+                <span>{{ r.prediction }}</span>
+              </span>
+            </td>
+            <td>
+              <div class="confidence-bar-wrap">
+                <div class="mini-bar">
+                  <div class="mini-fill {{ r.verdict_category }}" style="width: {{ r.confidence if r.verdict_category != 'alert' else 0 }}%;"></div>
+                </div>
+                <span class="conf-pct">
+                  {% if r.verdict_category != 'alert' %}{{ r.confidence }}%{% else %}—{% endif %}
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="date-text">{{ r.created_at }}</span>
+            </td>
+            <td style="text-align: right;">
+              <a href="/result/{{ r.id }}" class="action-link">
+                <span>View Result</span>
+                <svg viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+      </div>
+      <div class="empty-title">No Recent Analyses</div>
+      <div class="empty-sub">Uploaded media verifications will appear here automatically.</div>
+      <a href="/" class="btn btn-primary" style="margin-top: 0.25rem;">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Start Verification</span>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% if data.total > 0 %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof Chart === 'undefined') return;
+
+  // Donut Chart
+  const donutEl = document.getElementById('verdictDonut');
+  if (donutEl) {
+    new Chart(donutEl.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Authentic', 'AI Synthetic', 'Uncertain'],
+        datasets: [{
+          data: [{{ data.human_count }}, {{ data.ai_count }}, {{ data.alert_count }}],
+          backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+          borderColor: ['#121824', '#121824', '#121824'],
+          borderWidth: 2,
+          hoverOffset: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#182232',
+            titleColor: '#f8fafc',
+            bodyColor: '#94a3b8',
+            borderColor: '#1f2a3c',
+            borderWidth: 1,
+            padding: 8,
+            cornerRadius: 4
+          }
+        }
+      }
+    });
+  }
+
+  // Modality Bar Chart
+  const barEl = document.getElementById('modalityBar');
+  if (barEl) {
+    new Chart(barEl.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['Image', 'Video', 'Audio', 'Text'],
+        datasets: [{
+          data: [
+            {{ data.media_types.get('image', 0) }},
+            {{ data.media_types.get('video', 0) }},
+            {{ data.media_types.get('audio', 0) }},
+            {{ data.media_types.get('text', 0) }}
+          ],
+          backgroundColor: ['#3b82f6', '#6366f1', '#8b5cf6', '#06b6d4'],
+          borderRadius: 4,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#182232',
+            borderColor: '#1f2a3c',
+            borderWidth: 1,
+            padding: 8,
+            cornerRadius: 4
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { family: 'DM Sans', size: 11 } }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#64748b', stepSize: 1, font: { family: 'JetBrains Mono', size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.04)' }
+          }
+        }
+      }
+    });
+  }
+});
+</script>
+{% endif %}
+
+</body>
+</html>

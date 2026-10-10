@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepShield AI — Verification History</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0b0f17;
+  --surface: #121824;
+  --surface-hover: #182232;
+  --surface-alt: #0e141f;
+  --border: #1f2a3c;
+  --border-focus: #3b82f6;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --faint: #64748b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --ai-col: #ef4444;
+  --ai-bg: rgba(239, 68, 68, 0.12);
+  --ai-bdr: rgba(239, 68, 68, 0.25);
+  --hu-col: #10b981;
+  --hu-bg: rgba(16, 185, 129, 0.12);
+  --hu-bdr: rgba(16, 185, 129, 0.25);
+  --warn-col: #f59e0b;
+  --warn-bg: rgba(245, 158, 11, 0.12);
+  --warn-bdr: rgba(245, 158, 11, 0.25);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 50% 0%, #151e2e 0%, transparent 60%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.25rem 4rem;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAVBAR */
+.navbar {
+  width: 100%;
+  max-width: 1060px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: relative;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+}
+
+.brand-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.brand-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-link {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 13px;
+  border-radius: var(--radius-xs);
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+  color: #ffffff;
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 1060px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* FLASH NOTICES */
+.flash-notice {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+}
+
+/* HEADER */
+.history-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.history-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  background: #172554;
+  border: 1px solid #1e3a8a;
+  border-radius: var(--radius-xs);
+  padding: 3px 9px;
+  width: fit-content;
+}
+
+.eyebrow svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+h1 {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+}
+
+.history-sub {
+  font-size: 0.88rem;
+  color: var(--muted);
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: #cbd5e1;
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-hover);
+  color: #ffffff;
+  border-color: #334155;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* FILTER CARD */
+.filter-card {
+  padding: 1rem 1.25rem;
+}
+
+.filter-form {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.search-input-wrap {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-wrap svg {
+  position: absolute;
+  left: 11px;
+  width: 15px;
+  height: 15px;
+  stroke: var(--faint);
+  fill: none;
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.84rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  border-color: var(--border-focus);
+}
+
+.search-input::placeholder {
+  color: var(--faint);
+}
+
+.filter-select {
+  padding: 8px 12px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.84rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  border-color: var(--border-focus);
+}
+
+.filter-select option {
+  background: #182232;
+  color: var(--text);
+}
+
+.btn-filter {
+  padding: 8px 15px;
+}
+
+/* TABLE CARD */
+.history-table-card {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.table-header-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding-bottom: 0.5rem;
+}
+
+.record-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.84rem;
+}
+
+th {
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 0.85rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: middle;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.id-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  color: var(--faint);
+}
+
+.cell-file {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 220px;
+}
+
+.file-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-reason {
+  font-size: 0.72rem;
+  color: var(--faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #182232;
+  border: 1px solid var(--border);
+  color: #cbd5e1;
+}
+
+.badge-type svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.badge-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.badge-verdict.ai {
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-bdr);
+  color: #fca5a5;
+}
+
+.badge-verdict.human {
+  background: var(--hu-bg);
+  border: 1px solid var(--hu-bdr);
+  color: #6ee7b7;
+}
+
+.badge-verdict.alert {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-bdr);
+  color: #fde68a;
+}
+
+.scores-split {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 105px;
+}
+
+.scores-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.scores-labels .ai-val { color: #fca5a5; }
+.scores-labels .hu-val { color: #6ee7b7; }
+
+.split-bar {
+  height: 4px;
+  background: #1e293b;
+  border-radius: 2px;
+  overflow: hidden;
+  display: flex;
+}
+
+.split-ai { background: var(--ai-col); height: 100%; }
+.split-hu { background: var(--hu-col); height: 100%; }
+
+.date-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.action-link {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #60a5fa;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  border: 1px solid #1e3a8a;
+  background: #172554;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s;
+}
+
+.action-link:hover {
+  background: #1e40af;
+  color: #ffffff;
+}
+
+.action-link svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.action-link.pdf-btn {
+  color: #cbd5e1;
+  border-color: var(--border);
+  background: #162030;
+}
+
+.action-link.pdf-btn:hover {
+  background: #22324a;
+  color: #ffffff;
+}
+
+.delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  cursor: pointer;
+  padding: 4px 7px;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #ffffff;
+}
+
+.delete-btn svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.empty-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: #162030;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--faint);
+}
+
+.empty-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.empty-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .history-header { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; }
+  .header-actions .btn { flex: 1; justify-content: center; }
+  .filter-form { flex-direction: column; align-items: stretch; }
+}
+
+@media (max-width: 560px) {
+  body { padding: 1rem 0.75rem 3rem; }
+  .navbar { flex-direction: column; gap: 0.75rem; }
+  .nav-links { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+    <span class="brand-name">DeepShield AI</span>
+  </a>
+
+  <div class="nav-links">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/dashboard" class="nav-link">Dashboard</a>
+    <a href="/#uploadCard" class="nav-link">Verify Media</a>
+    <a href="/history" class="nav-link active">History</a>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="flash-notice">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>{{ message }}</span>
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <header class="history-header">
+    <div class="history-title-group">
+      <div class="eyebrow">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Audit Trail</span>
+      </div>
+      <h1>Verification History</h1>
+      <p class="history-sub">Search, filter, and inspect past multi-modal authenticity analyses stored in the local SQLite database.</p>
+    </div>
+
+    <div class="header-actions">
+      <a href="/dashboard" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="/" class="btn btn-primary">
+        <svg viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>New Verification</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- FILTER & SEARCH CARD -->
+  <div class="card filter-card">
+    <form action="/history" method="get" class="filter-form">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" name="search" class="search-input" placeholder="Search filename, SHA-256, verdict, reason..." value="{{ search }}">
+      </div>
+
+      <select name="media" class="filter-select">
+        <option value="all" {% if media_filter == 'all' %}selected{% endif %}>All Media Types</option>
+        <option value="image" {% if media_filter == 'image' %}selected{% endif %}>Image</option>
+        <option value="video" {% if media_filter == 'video' %}selected{% endif %}>Video</option>
+        <option value="audio" {% if media_filter == 'audio' %}selected{% endif %}>Audio</option>
+        <option value="text" {% if media_filter == 'text' %}selected{% endif %}>Text / Document</option>
+      </select>
+
+      <select name="verdict" class="filter-select">
+        <option value="all" {% if verdict_filter == 'all' %}selected{% endif %}>All Verdicts</option>
+        <option value="human" {% if verdict_filter == 'human' %}selected{% endif %}>Authentic / Human</option>
+        <option value="ai" {% if verdict_filter == 'ai' %}selected{% endif %}>AI Generated / Synthetic</option>
+        <option value="alert" {% if verdict_filter == 'alert' %}selected{% endif %}>Uncertain / Alert</option>
+      </select>
+
+      <input type="date" name="date" class="filter-select" value="{{ date_filter }}" title="Filter by date (YYYY-MM-DD)">
+
+      <select name="sort" class="filter-select">
+        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Sort: Newest First</option>
+        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Sort: Oldest First</option>
+        <option value="confidence_desc" {% if sort_by == 'confidence_desc' %}selected{% endif %}>Sort: Highest Confidence</option>
+        <option value="confidence_asc" {% if sort_by == 'confidence_asc' %}selected{% endif %}>Sort: Lowest Confidence</option>
+        <option value="filename_asc" {% if sort_by == 'filename_asc' %}selected{% endif %}>Sort: Filename (A-Z)</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary btn-filter">
+        <span>Filter</span>
+      </button>
+
+      {% if search or media_filter != 'all' or verdict_filter != 'all' or date_filter or sort_by != 'newest' %}
+      <a href="/history" class="btn btn-secondary btn-filter" title="Reset all filters">
+        <span>Reset</span>
+      </a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- TABLE CARD -->
+  <div class="card history-table-card">
+    <div class="table-header-info">
+      <span>Showing <span class="record-count">{{ records | length }}</span> verification record(s)</span>
+      {% if search %}
+      <span>Query: "{{ search }}"</span>
+      {% endif %}
+    </div>
+
+    {% if records %}
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px;">ID</th>
+            <th>Artifact Filename</th>
+            <th>Media Type</th>
+            <th>Detection Verdict</th>
+            <th>Confidence Split</th>
+            <th>Analysis Date</th>
+            <th style="text-align: right; min-width: 140px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td>
+              <span class="id-badge">#{{ "%04d" | format(r.id) }}</span>
+            </td>
+            <td>
+              <div class="cell-file">
+                <span class="file-mono" title="{{ r.filename }}">{{ r.filename }}</span>
+                {% if r.sha256 and r.sha256 != 'N/A' %}
+                <span class="file-reason" title="SHA-256: {{ r.sha256 }}">SHA-256: {{ r.sha256[:12] }}...</span>
+                {% elif r.reason %}
+                <span class="file-reason" title="{{ r.reason }}">{{ r.reason }}</span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <span class="badge-type">
+                {% if r.media_type == 'image' %}
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  Image
+                {% elif r.media_type == 'video' %}
+                  <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                  Video
+                {% elif r.media_type == 'audio' %}
+                  <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                  Audio
+                {% else %}
+                  <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Text
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              <span class="badge-verdict {{ r.verdict_category }}">
+                <span>●</span>
+                <span>{{ r.prediction }}</span>
+              </span>
+            </td>
+            <td>
+              {% if r.verdict_category != 'alert' %}
+              <div class="scores-split">
+                <div class="scores-labels">
+                  <span class="hu-val">H: {{ r.human_score }}%</span>
+                  <span class="ai-val">AI: {{ r.ai_score }}%</span>
+                </div>
+                <div class="split-bar">
+                  <div class="split-hu" style="width: {{ r.human_score }}%;"></div>
+                  <div class="split-ai" style="width: {{ r.ai_score }}%;"></div>
+                </div>
+              </div>
+              {% else %}
+              <span style="font-size: 0.74rem; color: var(--faint);">—</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="date-text">{{ r.created_at }}</span>
+            </td>
+            <td style="text-align: right;">
+              <div class="table-actions">
+                <a href="/result/{{ r.id }}" class="action-link" title="Inspect Result">
+                  <span>View</span>
+                  <svg viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </a>
+                <a href="/result/{{ r.id }}/pdf" class="action-link pdf-btn" title="Download PDF Report">
+                  <span>PDF</span>
+                </a>
+                <form action="/delete/{{ r.id }}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to permanently delete audit record #{{ '%04d' | format(r.id) }} ({{ r.filename }})?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="delete-btn" title="Delete record">
+                    <svg viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </div>
+      <div class="empty-title">No Matching Records</div>
+      <div class="empty-sub">
+        {% if search or media_filter != 'all' or verdict_filter != 'all' or date_filter %}
+        No verification entries matched your filter parameters.
+        {% else %}
+        No verifications are recorded in the database yet.
+        {% endif %}
+      </div>
+      {% if search or media_filter != 'all' or verdict_filter != 'all' or date_filter %}
+      <a href="/history" class="btn btn-secondary" style="margin-top: 0.25rem;">
+        <span>Reset Filters</span>
+      </a>
+      {% else %}
+      <a href="/" class="btn btn-primary" style="margin-top: 0.25rem;">
+        <span>Run First Verification</span>
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+</body>
+</html>

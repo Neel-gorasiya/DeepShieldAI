@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepShield AI — AI-Powered Deepfake Detection &amp; Media Verification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0b0f17;
+  --surface: #121824;
+  --surface-hover: #182232;
+  --surface-alt: #0e141f;
+  --border: #1f2a3c;
+  --border-focus: #3b82f6;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --faint: #64748b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --ai-col: #ef4444;
+  --ai-bg: rgba(239, 68, 68, 0.1);
+  --ai-bdr: rgba(239, 68, 68, 0.25);
+  --hu-col: #10b981;
+  --hu-bg: rgba(16, 185, 129, 0.1);
+  --hu-bdr: rgba(16, 185, 129, 0.25);
+  --warn-col: #f59e0b;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 50% 0%, #151e2e 0%, transparent 60%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.25rem 4rem;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAVBAR */
+.navbar {
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 2.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: relative;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+}
+
+.brand-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.brand-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-link {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 13px;
+  border-radius: var(--radius-xs);
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+  color: #ffffff;
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* HERO SECTION */
+.hero-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  background: #172554;
+  border: 1px solid #1e3a8a;
+  border-radius: var(--radius-xs);
+  padding: 4px 11px;
+}
+
+.eyebrow svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: #f8fafc;
+  letter-spacing: -0.025em;
+}
+
+.sub {
+  font-size: 0.92rem;
+  color: var(--muted);
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 620px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: #cbd5e1;
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-hover);
+  color: #ffffff;
+  border-color: #334155;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+/* UPLOAD CARD */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.drop-zone {
+  padding: 2.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s, border-color 0.15s;
+  background: var(--surface-alt);
+}
+
+.drop-zone:hover {
+  background: #141c2b;
+}
+
+.drop-zone.drag-over {
+  background: #172338;
+  border-color: var(--primary);
+}
+
+.upload-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: #162030;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #60a5fa;
+}
+
+.upload-icon-box svg {
+  width: 26px;
+  height: 26px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+}
+
+.drop-title {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.drop-hint {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: -0.4rem;
+}
+
+.browse-btn {
+  margin-top: 0.2rem;
+  padding: 8px 18px;
+  background: #1c273a;
+  color: #f1f5f9;
+  border: 1px solid #2d3d56;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.15s;
+}
+
+.browse-btn:hover {
+  background: #25334c;
+}
+
+.browse-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+input[type="file"] { display: none; }
+
+.preview-area {
+  display: none;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: #0f1522;
+}
+
+.preview-area.visible {
+  display: flex;
+}
+
+.preview-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #93c5fd;
+}
+
+.remove-btn {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-xs);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #fca5a5;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s;
+}
+
+.remove-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ffffff;
+}
+
+.preview-media-container {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #080c13;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70px;
+}
+
+.preview-media-container img,
+.preview-media-container video {
+  max-width: 100%;
+  max-height: 240px;
+  object-fit: contain;
+  display: block;
+}
+
+.preview-media-container audio {
+  width: 100%;
+  padding: 0.85rem;
+}
+
+.file-meta-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.85rem 1rem;
+  width: 100%;
+}
+
+.file-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-xs);
+  background: #1a2538;
+  border: 1px solid #28374f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #93c5fd;
+  flex-shrink: 0;
+}
+
+.file-icon-badge svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-details {
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.file-ext-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  background: #1f2a3c;
+  color: #cbd5e1;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.card-foot {
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--surface);
+}
+
+.foot-hint {
+  font-size: 0.78rem;
+  color: var(--faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.foot-hint svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.analyse-btn {
+  padding: 9px 22px;
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+
+.analyse-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.analyse-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.analyse-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+/* CAPABILITIES GRID */
+.capabilities-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.cap-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cap-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cap-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: #1a2538;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #60a5fa;
+}
+
+.cap-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.cap-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.cap-exts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.cap-desc {
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 2px;
+}
+
+/* LOADING OVERLAY */
+#loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 15, 23, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  z-index: 1000;
+}
+
+#loading.active {
+  display: flex;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid #1f2a3c;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.loading-sub {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin-top: -0.6rem;
+}
+
+@media (max-width: 680px) {
+  body { padding: 1rem 0.75rem 3rem; }
+  .navbar { flex-direction: column; gap: 0.75rem; }
+  .capabilities-grid { grid-template-columns: repeat(2, 1fr); }
+  .drop-zone { padding: 2rem 1.25rem; }
+  .card-foot { flex-direction: column; align-items: stretch; text-align: center; }
+  .foot-hint { justify-content: center; }
+  .analyse-btn { justify-content: center; width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+    <span class="brand-name">DeepShield AI</span>
+  </a>
+
+  <div class="nav-links">
+    <a href="/" class="nav-link active">Home</a>
+    <a href="/dashboard" class="nav-link">Dashboard</a>
+    <a href="/#uploadCard" class="nav-link">Verify Media</a>
+    <a href="/history" class="nav-link">History</a>
+  </div>
+</nav>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Analyzing Media Forensics</div>
+  <div class="loading-sub">Running neural feature extraction and artifact detection...</div>
+</div>
+
+<div class="wrapper">
+
+  <header class="hero-header">
+    <div class="eyebrow">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      AI-Powered Deepfake Detection &amp; Media Verification
+    </div>
+    <h1>Detect Synthetic Media &amp; Deepfakes</h1>
+    <p class="sub">Upload images, videos, audio recordings, or documents to verify authenticity using layered neural networks and forensic signal processing algorithms.</p>
+    
+    <div class="hero-actions">
+      <a href="/dashboard" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>View Dashboard</span>
+      </a>
+      <a href="/history" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Verification History</span>
+      </a>
+    </div>
+  </header>
+
+  <form action="/predict" method="post" enctype="multipart/form-data" id="uploadForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="card" id="uploadCard">
+
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon-box">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <div class="drop-title">Drop media artifact here, or click to browse</div>
+        <div class="drop-hint">Supports Images, Videos, Audio recordings &amp; Documents up to 500 MB</div>
+        <button type="button" class="browse-btn" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">
+          <svg viewBox="0 0 24 24">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+          Select File
+        </button>
+      </div>
+
+      <input type="file" name="file" id="fileInput"
+        accept=".jpg,.jpeg,.png,.mp4,.avi,.mov,.wav,.mp3,.txt,.pdf,.docx">
+
+      <div class="preview-area" id="previewArea">
+        <div class="preview-top">
+          <span class="preview-tag">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Selected Artifact
+          </span>
+          <button type="button" class="remove-btn" onclick="clearFile()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Remove
+          </button>
+        </div>
+        <div class="preview-media-container" id="previewMedia"></div>
+      </div>
+
+      <div class="card-foot">
+        <div class="foot-hint">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>Maximum payload size: 500 MB</span>
+        </div>
+        <button type="submit" class="analyse-btn" id="analyseBtn" disabled>
+          <span>Run Verification</span>
+          <svg viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+  <div class="capabilities-grid">
+    <div class="cap-card">
+      <div class="cap-header">
+        <div class="cap-icon">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <span class="cap-title">Image Forensics</span>
+      </div>
+      <div class="cap-exts">JPG · JPEG · PNG</div>
+      <div class="cap-desc">CLIP ViT-B/32 zero-shot semantic prompt vector matching</div>
+    </div>
+
+    <div class="cap-card">
+      <div class="cap-header">
+        <div class="cap-icon">
+          <svg viewBox="0 0 24 24">
+            <polygon points="23 7 16 12 23 17 23 7"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+        </div>
+        <span class="cap-title">Video Analysis</span>
+      </div>
+      <div class="cap-exts">MP4 · AVI · MOV</div>
+      <div class="cap-desc">EfficientNet features with Laplacian &amp; DCT texture heuristics</div>
+    </div>
+
+    <div class="cap-card">
+      <div class="cap-header">
+        <div class="cap-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </div>
+        <span class="cap-title">Audio &amp; Voice</span>
+      </div>
+      <div class="cap-exts">WAV · MP3</div>
+      <div class="cap-desc">F0 pitch stability, shimmer &amp; Wav2Vec2 hidden state variance</div>
+    </div>
+
+    <div class="cap-card">
+      <div class="cap-header">
+        <div class="cap-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <span class="cap-title">Text Documents</span>
+      </div>
+      <div class="cap-exts">PDF · DOCX · TXT</div>
+      <div class="cap-desc">RoBERTa neural token sequence classifier for AI writing</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+const previewArea = document.getElementById('previewArea');
+const previewMedia = document.getElementById('previewMedia');
+const analyseBtn = document.getElementById('analyseBtn');
+const uploadForm = document.getElementById('uploadForm');
+
+fileInput.addEventListener('change', () => { 
+  if (fileInput.files && fileInput.files[0]) {
+    handleFile(fileInput.files[0]); 
+  }
+});
+
+document.body.addEventListener('dragover', (e) => { 
+  e.preventDefault(); 
+  dropZone.classList.add('drag-over'); 
+});
+
+document.body.addEventListener('dragleave', (e) => {
+  if (!dropZone.contains(e.relatedTarget)) {
+    dropZone.classList.remove('drag-over');
+  }
+});
+
+document.body.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) {
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    fileInput.files = dt.files;
+    handleFile(f);
+  }
+});
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function handleFile(file) {
+  previewMedia.innerHTML = '';
+  const url = URL.createObjectURL(file);
+  const ext = file.name.split('.').pop().toUpperCase();
+
+  if (file.type.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.src = url;
+    previewMedia.appendChild(img);
+  } else if (file.type.startsWith('video/')) {
+    const v = document.createElement('video');
+    v.src = url;
+    v.controls = true;
+    v.autoplay = false;
+    previewMedia.appendChild(v);
+  } else if (file.type.startsWith('audio/')) {
+    const a = document.createElement('audio');
+    a.src = url;
+    a.controls = true;
+    previewMedia.appendChild(a);
+  } else {
+    const metaCard = document.createElement('div');
+    metaCard.className = 'file-meta-card';
+
+    const iconBadge = document.createElement('div');
+    iconBadge.className = 'file-icon-badge';
+    iconBadge.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+
+    const info = document.createElement('div');
+    info.className = 'file-info';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'file-name';
+    nameEl.textContent = file.name;
+
+    const detailsEl = document.createElement('div');
+    detailsEl.className = 'file-details';
+
+    const extChip = document.createElement('span');
+    extChip.className = 'file-ext-chip';
+    extChip.textContent = ext;
+
+    const bullet = document.createElement('span');
+    bullet.textContent = ' \u2022 ';
+
+    const sizeEl = document.createElement('span');
+    sizeEl.textContent = fmtSize(file.size);
+
+    detailsEl.appendChild(extChip);
+    detailsEl.appendChild(bullet);
+    detailsEl.appendChild(sizeEl);
+
+    info.appendChild(nameEl);
+    info.appendChild(detailsEl);
+
+    metaCard.appendChild(iconBadge);
+    metaCard.appendChild(info);
+    previewMedia.appendChild(metaCard);
+  }
+
+  previewArea.classList.add('visible');
+  analyseBtn.disabled = false;
+}
+
+function clearFile() {
+  fileInput.value = '';
+  previewArea.classList.remove('visible');
+  previewMedia.innerHTML = '';
+  analyseBtn.disabled = true;
+}
+
+uploadForm.addEventListener('submit', () => {
+  analyseBtn.disabled = true;
+  document.getElementById('loading').classList.add('active');
+});
+</script>
+</body>
+</html>

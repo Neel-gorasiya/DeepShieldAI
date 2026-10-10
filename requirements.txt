@@ -1,0 +1,14 @@
+flask>=2.3.0
+werkzeug>=2.3.0
+setuptools<81   # openai-clip still imports pkg_resources; newer setuptools removed it
+torch>=2.0.0
+transformers>=4.35.0
+Pillow>=10.0.0
+librosa>=0.10.0
+numpy>=1.24.0
+opencv-python>=4.8.0
+torchvision>=0.15.0
+pdfplumber>=0.10.0
+python-docx>=1.0.0
+openai-clip
+reportlab>=4.0.0

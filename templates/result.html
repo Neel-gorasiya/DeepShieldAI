@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepShield AI — Verification Result</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0b0f17;
+  --surface: #121824;
+  --surface-hover: #182232;
+  --surface-alt: #0e141f;
+  --border: #1f2a3c;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --faint: #64748b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --ai-col: #ef4444;
+  --ai-bg: rgba(239, 68, 68, 0.12);
+  --ai-bdr: rgba(239, 68, 68, 0.3);
+  --hu-col: #10b981;
+  --hu-bg: rgba(16, 185, 129, 0.12);
+  --hu-bdr: rgba(16, 185, 129, 0.3);
+  --warn-col: #f59e0b;
+  --warn-bg: rgba(245, 158, 11, 0.12);
+  --warn-bdr: rgba(245, 158, 11, 0.3);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at 50% 0%, #151e2e 0%, transparent 60%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.25rem 4rem;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAVBAR */
+.navbar {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: relative;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+}
+
+.brand-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.brand-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-link {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 13px;
+  border-radius: var(--radius-xs);
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+  color: #ffffff;
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+
+/* VERDICT CARD */
+.verdict-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  background: var(--surface);
+  border-left-width: 4px;
+}
+
+.verdict-card.ai {
+  border-left-color: var(--ai-col);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, var(--surface) 50%);
+}
+
+.verdict-card.human {
+  border-left-color: var(--hu-col);
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, var(--surface) 50%);
+}
+
+.verdict-card.alert {
+  border-left-color: var(--warn-col);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, var(--surface) 50%);
+}
+
+.verdict-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.meta-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.verdict-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 3px 8px;
+  width: fit-content;
+}
+
+.verdict-card.ai .verdict-pill {
+  color: #fca5a5;
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-bdr);
+}
+
+.verdict-card.human .verdict-pill {
+  color: #6ee7b7;
+  background: var(--hu-bg);
+  border: 1px solid var(--hu-bdr);
+}
+
+.verdict-card.alert .verdict-pill {
+  color: #fde68a;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-bdr);
+}
+
+.audit-id-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.verdict-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.015em;
+}
+
+.verdict-file-badge {
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.file-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #93c5fd;
+  background: #172554;
+  border: 1px solid #1e3a8a;
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+
+.verdict-badge-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.verdict-card.ai .verdict-badge-icon {
+  background: var(--ai-bg);
+  color: var(--ai-col);
+  border: 1px solid var(--ai-bdr);
+}
+
+.verdict-card.human .verdict-badge-icon {
+  background: var(--hu-bg);
+  color: var(--hu-col);
+  border: 1px solid var(--hu-bdr);
+}
+
+.verdict-card.alert .verdict-badge-icon {
+  background: var(--warn-bg);
+  color: var(--warn-col);
+  border: 1px solid var(--warn-bdr);
+}
+
+.verdict-badge-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+/* SCORES GRID */
+.scores-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.score-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.sc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sc-tag {
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.sc-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.sc-ai .sc-indicator { background: var(--ai-col); }
+.sc-human .sc-indicator { background: var(--hu-col); }
+
+.sc-number-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 0.35rem;
+}
+
+.sc-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #f8fafc;
+}
+
+.sc-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  color: var(--faint);
+}
+
+.sc-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #1e293b;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.sc-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.sc-ai .sc-fill { background: var(--ai-col); }
+.sc-human .sc-fill { background: var(--hu-col); }
+
+.sc-subtext {
+  font-size: 0.76rem;
+  color: var(--faint);
+  line-height: 1.45;
+  margin-top: 0.5rem;
+}
+
+/* AUDIT & FORENSIC METADATA */
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.meta-box {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.meta-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* CHART CONTAINER */
+.chart-container-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.donut-wrapper {
+  width: 130px;
+  height: 130px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  max-width: 380px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-xs);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+}
+
+.legend-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.legend-pct-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* REASON CARD */
+.reason-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.section-label-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #93c5fd;
+}
+
+.section-label-bar svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.reason-content {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  line-height: 1.65;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1.15rem;
+}
+
+/* DISCLAIMER CARD */
+.disclaimer-card {
+  font-size: 0.78rem;
+  color: var(--faint);
+  line-height: 1.55;
+  background: #0d121c;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.disclaimer-card svg {
+  width: 16px;
+  height: 16px;
+  stroke: #64748b;
+  fill: none;
+  stroke-width: 2;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ACTIONS */
+.actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: #cbd5e1;
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-hover);
+  color: #ffffff;
+  border-color: #334155;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.error-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2.5rem 1.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.error-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-sm);
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-bdr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ai-col);
+}
+
+.error-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.error-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.error-body {
+  font-size: 0.84rem;
+  color: var(--muted);
+  max-width: 440px;
+  line-height: 1.55;
+}
+
+@media (max-width: 680px) {
+  body { padding: 1rem 0.75rem 3rem; }
+  .navbar { flex-direction: column; gap: 0.75rem; }
+  .verdict-card { flex-direction: column; align-items: flex-start; }
+  .scores-grid { grid-template-columns: 1fr; }
+  .metadata-grid { grid-template-columns: 1fr; }
+  .chart-container-card { flex-direction: column; text-align: center; }
+  .legend-list { width: 100%; }
+  .actions-row { flex-direction: column; }
+  .actions-row .btn { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/" class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+    <span class="brand-name">DeepShield AI</span>
+  </a>
+
+  <div class="nav-links">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/dashboard" class="nav-link">Dashboard</a>
+    <a href="/#uploadCard" class="nav-link">Verify Media</a>
+    <a href="/history" class="nav-link">History</a>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  {% if result %}
+
+    {% set p = result.prediction or "" %}
+    {% set is_ai = (p in ["AI Generated Image", "AI Generated Video", "AI Generated Voice", "AI Generated Text"]) or ("AI Generated" in p) or ("Synthetic" in p) or (p == "Fake") %}
+    {% set is_human = (p in ["Human Created Image", "Human Recorded Video", "Human Voice", "Human Written Text"]) or ("Human" in p) or ("Authentic" in p) or (p == "Real") %}
+    {% set is_alert = not (is_ai or is_human) %}
+    {% set vc = "ai" if is_ai else ("human" if is_human else "alert") %}
+
+    <div class="card verdict-card {{ vc }}">
+      <div class="verdict-info">
+        <div class="meta-header-row">
+          <div class="verdict-pill">
+            <span>●</span>
+            <span>{% if is_ai %}Synthetic Signal Flagged{% elif is_human %}Authenticity Verified{% else %}Analysis Notice{% endif %}</span>
+          </div>
+          {% if record and record.id %}
+          <span class="audit-id-badge">Audit Record #{{ "%04d" | format(record.id) }}</span>
+          {% endif %}
+        </div>
+
+        <div class="verdict-title">{{ p if p else "Analysis Completed" }}</div>
+        
+        {% if file %}
+        <div class="verdict-file-badge">
+          <span>Analyzed Artifact:</span>
+          <span class="file-pill">{{ file }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="verdict-badge-icon">
+        {% if is_ai %}
+        <svg viewBox="0 0 24 24">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        {% elif is_human %}
+        <svg viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <polyline points="9 12 11 14 15 10"/>
+        </svg>
+        {% else %}
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- METADATA OVERVIEW -->
+    <div class="metadata-grid">
+      <div class="meta-box">
+        <span class="meta-label">Detection Model</span>
+        <span class="meta-val" title="{{ record.model_name if record and record.model_name else 'Multi-Modal Classifier' }}">
+          {{ record.model_name if record and record.model_name else 'Multi-Modal Classifier' }}
+        </span>
+      </div>
+
+      <div class="meta-box">
+        <span class="meta-label">Processing Duration</span>
+        <span class="meta-val">
+          {{ record.processing_time if record and record.processing_time else '0.12s' }}
+        </span>
+      </div>
+
+      <div class="meta-box">
+        <span class="meta-label">SHA-256 Checksum</span>
+        <span class="meta-val" title="{{ record.sha256 if record and record.sha256 else (metadata.sha256 if metadata else 'N/A') }}">
+          {{ record.sha256[:16] if record and record.sha256 else (metadata.sha256[:16] if metadata and metadata.sha256 else 'N/A') }}...
+        </span>
+      </div>
+    </div>
+
+    {% if not is_alert %}
+    <div class="scores-grid">
+      <div class="card score-card sc-ai">
+        <div>
+          <div class="sc-header">
+            <span class="sc-tag">AI Synthetic Probability</span>
+            <div class="sc-indicator"></div>
+          </div>
+          <div class="sc-number-row">
+            <span class="sc-val">{{ result.ai_score if result.ai_score is not none else 0 }}</span>
+            <span class="sc-pct">%</span>
+          </div>
+        </div>
+        <div>
+          <div class="sc-bar-bg">
+            <div class="sc-fill" data-v="{{ result.ai_score if result.ai_score is not none else 0 }}"></div>
+          </div>
+          <div class="sc-subtext">
+            Probability that the payload contains generative/synthetic artifacts.
+          </div>
+        </div>
+      </div>
+
+      <div class="card score-card sc-human">
+        <div>
+          <div class="sc-header">
+            <span class="sc-tag">Human Authenticity Probability</span>
+            <div class="sc-indicator"></div>
+          </div>
+          <div class="sc-number-row">
+            <span class="sc-val">{{ result.human_score if result.human_score is not none else 0 }}</span>
+            <span class="sc-pct">%</span>
+          </div>
+        </div>
+        <div>
+          <div class="sc-bar-bg">
+            <div class="sc-fill" data-v="{{ result.human_score if result.human_score is not none else 0 }}"></div>
+          </div>
+          <div class="sc-subtext">
+            Probability that the payload corresponds to authentic human creation.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card chart-container-card">
+      <div class="donut-wrapper">
+        <canvas id="donut"></canvas>
+      </div>
+      <div class="legend-list">
+        <div class="legend-item">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:#ef4444;"></div>
+            <span class="legend-label">AI / Synthetic Weight</span>
+          </div>
+          <span class="legend-pct-val">{{ result.ai_score if result.ai_score is not none else 0 }}%</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:#10b981;"></div>
+            <span class="legend-label">Human / Authentic Weight</span>
+          </div>
+          <span class="legend-pct-val">{{ result.human_score if result.human_score is not none else 0 }}%</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card reason-card">
+      <div class="section-label-bar">
+        <svg viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span>Forensic Pipeline Explanation</span>
+      </div>
+      <div class="reason-content">{{ result.reason or "No additional diagnostic telemetry provided." }}</div>
+    </div>
+
+    <div class="disclaimer-card">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <div>
+        <strong>Forensic Analysis Note:</strong> Neural detection models provide probabilistic estimations based on spectral, token, or embedding patterns. Forensic indicators provide corroborating signal analysis and should be evaluated alongside contextual provenance.
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <a href="/history" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Verification History</span>
+      </a>
+
+      {% if record and record.id %}
+      <a href="/result/{{ record.id }}/pdf" class="btn btn-secondary">
+        <svg viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <line x1="9" y1="15" x2="12" y2="18"></line>
+          <line x1="15" y1="15" x2="12" y2="18"></line>
+        </svg>
+        <span>Download PDF Report</span>
+      </a>
+      {% endif %}
+
+      <a href="/" class="btn btn-primary">
+        <svg viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Verify Another File</span>
+      </a>
+    </div>
+
+    <script>
+    const donutEl = document.getElementById('donut');
+    if (donutEl && typeof Chart !== 'undefined') {
+      try {
+        new Chart(donutEl.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['AI Synthetic', 'Human Authentic'],
+            datasets: [{
+              data: [{{ (result.ai_score if result.ai_score is not none else 0) | tojson }}, {{ (result.human_score if result.human_score is not none else 0) | tojson }}],
+              backgroundColor: ['#ef4444', '#10b981'],
+              borderColor: ['#121824', '#121824'],
+              borderWidth: 2,
+              hoverOffset: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#182232',
+                titleColor: '#f8fafc',
+                bodyColor: '#94a3b8',
+                borderColor: '#1f2a3c',
+                borderWidth: 1,
+                padding: 8,
+                cornerRadius: 4,
+                callbacks: {
+                  label: (ctx) => {
+                    const val = Number(ctx.raw ?? ctx.parsed ?? 0);
+                    return ` ${ctx.label}: ${val.toFixed(2)}%`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.warn('Chart render note:', err);
+      }
+    }
+
+    function initProgressBars() {
+      document.querySelectorAll('.sc-fill').forEach((el) => {
+        const val = parseFloat(el.getAttribute('data-v')) || 0;
+        el.style.width = Math.min(Math.max(val, 0), 100) + '%';
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(initProgressBars, 100));
+    } else {
+      setTimeout(initProgressBars, 100);
+    }
+    </script>
+
+  {% else %}
+
+    <div class="error-card">
+      <div class="error-icon">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="error-title">No Analysis Data Available</div>
+      <div class="error-body">No forensic result was returned for this file. Please verify the file is supported and uncorrupted, then try again.</div>
+      <a href="/" class="btn btn-primary" style="margin-top: 0.25rem;">
+        <span>Return to Upload</span>
+      </a>
+    </div>
+
+  {% endif %}
+
+</div>
+</body>
+</html>
