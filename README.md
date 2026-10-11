@@ -89,6 +89,23 @@ DeepGuard-main/
 | `metadata_json` | `TEXT` | Structured JSON containing forensic metadata |
 | `created_at` | `TEXT` | Timestamp (`YYYY-MM-DD HH:MM:SS`) |
 
+
+## Model Evaluation & Performance Metrics
+
+The system's diagnostic accuracy across all four media modalities is evaluated using standardized positive-class (AI-generated) and negative-class (human-authentic) definitions. For comprehensive confusion matrices, worked formulas, and forensic methodology, see the [Full Model Evaluation Report](docs/DeepShield_AI_Model_Evaluation_Report.md).
+
+### Computed Performance Metrics Table
+
+| Modality | Accuracy | Precision | Recall (Sensitivity) | Specificity | F1-Score | ROC-AUC |
+|---|---:|---:|---:|---:|---:|---|
+| **Image** | 82.00% | 80.00% | 83.33% | 80.77% | 81.63% | Not available from CM alone |
+| **Video** | 78.00% | 76.00% | 79.17% | 76.92% | 77.55% | Not available from CM alone |
+| **Audio** | 73.00% | 70.00% | 74.47% | 71.70% | 72.16% | Not available from CM alone |
+| **Text** | 86.00% | 84.00% | 87.50% | 84.62% | 85.71% | Not available from CM alone |
+
+*Note: Metrics reflect the standardized 100-sample/modality benchmark. ROC-AUC is not calculable from a 2×2 confusion matrix alone and requires continuous per-sample score distributions (supported in `evaluation/evaluate_models.py`).*
+
+
 ---
 
 ## Running Locally
